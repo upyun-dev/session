@@ -1,5 +1,5 @@
-unreleased
-==========
+1.17.2 / 2020-11-26
+===================
 
   * Fix `res.end` patch to always commit headers
   * deps: cookie@0.4.1
