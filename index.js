@@ -80,7 +80,7 @@ var defer = typeof setImmediate === 'function'
  * @param {String|Array} [options.secret] Secret for signing session ID
  * @param {Object} [options.store=MemoryStore] Session store
  * @param {String} [options.unset]
- * 
+ *
  * @param {Object} [_options]
  * @param {String} [_options.name]
  * @param {String} [_options.secure]
@@ -224,7 +224,7 @@ function session(options, _options) {
     req.sessionStore = store;
 
     // get the session ID from the cookie
-    const keyName = req.protocol === 'http' ? name : _name;
+    var keyName = req.protocol === 'http' ? name : _name;
     var cookieId = req.sessionID = getcookie(req, keyName, secrets);
 
     // set-cookie
@@ -251,14 +251,14 @@ function session(options, _options) {
       }
 
       // set cookie
-      const option = req.session.cookie.data;
+      var option = req.session.cookie.data;
       setcookie(res, name, req.sessionID, secrets[0], option);
-      const keys = Object.keys(specialConf);
+      var keys = Object.keys(specialConf);
       if (keys.length) {
         if (_name === name) {
-          throw new TypeError(`The name can't be the same`);
+          throw new TypeError('The name can\'t be the same');
         }
-        keys.map(key => {
+        keys.map(function (key) {
           option[key] = specialConf[key]
         })
         setcookie(res, name, req.sessionID, secrets[0], option);
