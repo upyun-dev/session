@@ -261,7 +261,7 @@ function session(options, _options) {
         keys.map(function (key) {
           option[key] = specialConf[key]
         })
-        setcookie(res, name, req.sessionID, secrets[0], option);
+        setcookie(res, _name, req.sessionID, secrets[0], option);
       }
     });
 
