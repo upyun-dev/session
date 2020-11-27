@@ -20,6 +20,7 @@ app.use(session(
     cookie: {maxAge: 60000}
   },
   {
+    name: 'second',
     secure: 'Secure',
     httpOnly: false,
     sameSite: 'None',

@@ -82,6 +82,7 @@ var defer = typeof setImmediate === 'function'
  * @param {String} [options.unset]
  * 
  * @param {Object} [_options]
+ * @param {String} [_options.name]
  * @param {String} [_options.secure]
  * @param {String} [_options.httpOnly]
  * @param {String} [_options.sameSite]
@@ -102,6 +103,8 @@ function session(options, _options) {
 
   // get the session cookie name
   var name = opts.name || opts.key || 'connect.sid'
+
+  var _name = specialConf.name || 'connect._sid'
 
   // get the session store
   var store = opts.store || new MemoryStore()
@@ -221,7 +224,8 @@ function session(options, _options) {
     req.sessionStore = store;
 
     // get the session ID from the cookie
-    var cookieId = req.sessionID = getcookie(req, name, secrets);
+    const keyName = req.protocol === 'http' ? name : _name;
+    var cookieId = req.sessionID = getcookie(req, keyName, secrets);
 
     // set-cookie
     onHeaders(res, function(){
@@ -251,6 +255,9 @@ function session(options, _options) {
       setcookie(res, name, req.sessionID, secrets[0], option);
       const keys = Object.keys(specialConf);
       if (keys.length) {
+        if (_name === name) {
+          throw new TypeError(`The name can't be the same`);
+        }
         keys.map(key => {
           option[key] = specialConf[key]
         })
