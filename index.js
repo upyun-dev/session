@@ -71,6 +71,7 @@ var defer = typeof setImmediate === 'function'
  *
  * @param {Object} [options]
  * @param {Object} [options.cookie] Options for cookie
+ * @param {Object} [options.cookie.samesiteWithoutSecure] Options for cookie
  * @param {Function} [options.genid]
  * @param {String} [options.name=connect.sid] Session ID cookie name
  * @param {Boolean} [options.proxy]
@@ -93,8 +94,14 @@ function session(options) {
   // get the session id generate function
   var generateId = opts.genid || generateSessionId
 
+  // get the https special confing
+  var samesiteWithoutSecure = cookieOptions.samesiteWithoutSecure || false
+
   // get the session cookie name
   var name = opts.name || opts.key || 'connect.sid'
+
+  // get the special session cookie name
+  var _name = name + '-secure'
 
   // get the session store
   var store = opts.store || new MemoryStore()
@@ -214,7 +221,8 @@ function session(options) {
     req.sessionStore = store;
 
     // get the session ID from the cookie
-    var cookieId = req.sessionID = getcookie(req, name, secrets);
+    var cookieKeyName = samesiteWithoutSecure ? (req.protocol === 'http' ? name : _name) : name;
+    var cookieId = req.sessionID = getcookie(req, cookieKeyName, secrets)
 
     // set-cookie
     onHeaders(res, function(){
@@ -240,7 +248,14 @@ function session(options) {
       }
 
       // set cookie
-      setcookie(res, name, req.sessionID, secrets[0], req.session.cookie.data);
+      var setCookieData = req.session.cookie.data;
+      setcookie(res, name, req.sessionID, secrets[0], setCookieData);
+      if (samesiteWithoutSecure) {
+        setCookieData.sameSite = 'None';
+        setCookieData.secure = 'Secure';
+        setCookieData.httpOnly = false;
+        setcookie(res, _name, req.sessionID, secrets[0], setCookieData);
+      }
     });
 
     // proxy end() to commit the session
