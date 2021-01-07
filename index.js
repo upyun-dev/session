@@ -253,7 +253,6 @@ function session(options) {
       if (samesiteWithoutSecure) {
         setCookieData.sameSite = 'None';
         setCookieData.secure = 'Secure';
-        setCookieData.httpOnly = false;
         setcookie(res, _name, req.sessionID, secrets[0], setCookieData);
       }
     });
