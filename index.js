@@ -221,8 +221,7 @@ function session(options) {
     req.sessionStore = store;
 
     // get the session ID from the cookie
-    var cookieKeyName = samesiteWithoutSecure ? (req.protocol === 'http' ? name : _name) : name;
-    var cookieId = req.sessionID = getcookie(req, cookieKeyName, secrets)
+    var cookieId = req.sessionID = getcookie(req, name, secrets,samesiteWithoutSecure, _name);
 
     // set-cookie
     onHeaders(res, function(){
@@ -540,7 +539,7 @@ function generateSessionId(sess) {
  * @private
  */
 
-function getcookie(req, name, secrets) {
+function getcookie (req, name, secrets, samesiteWithoutSecure, _name) {
   var header = req.headers.cookie;
   var raw;
   var val;
@@ -551,6 +550,9 @@ function getcookie(req, name, secrets) {
 
     raw = cookies[name];
 
+    if (samesiteWithoutSecure && !raw) {
+      raw = cookies[_name];
+    }
     if (raw) {
       if (raw.substr(0, 2) === 's:') {
         val = unsigncookie(raw.slice(2), secrets);
@@ -569,6 +571,10 @@ function getcookie(req, name, secrets) {
   if (!val && req.signedCookies) {
     val = req.signedCookies[name];
 
+    if (samesiteWithoutSecure && !val) {
+      val = req.signedCookies[_name];
+    }
+
     if (val) {
       deprecate('cookie should be available in req.headers.cookie');
     }
@@ -577,6 +583,10 @@ function getcookie(req, name, secrets) {
   // back-compat read from cookieParser() cookies data
   if (!val && req.cookies) {
     raw = req.cookies[name];
+
+    if (samesiteWithoutSecure && !raw) {
+      raw = req.cookies[_name];
+    }
 
     if (raw) {
       if (raw.substr(0, 2) === 's:') {
